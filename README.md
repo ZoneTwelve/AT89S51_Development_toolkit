@@ -6,6 +6,7 @@
 ## 使用說明
 
 {準備中...}
+或參考 [toolkit release](https://github.com/ZoneTwelve/AT89S51_Development_toolkit/releases/tag/toolkit)
 
 ## 環境
 
