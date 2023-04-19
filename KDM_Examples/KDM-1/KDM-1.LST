@@ -1,0 +1,48 @@
+C51 COMPILER V8.01   KDM_1                                                                 01/08/2011 17:27:58 PAGE 1   
+
+
+C51 COMPILER V8.01, COMPILATION OF MODULE KDM_1
+OBJECT MODULE PLACED IN KDM-1.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE KDM-1.C BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include        <reg51.h>
+   2          /*宣告驅動信號陣列*/
+   3          char code TAB[10]={     0xc0, 0xf9, 0xa4, 0xb0, 0x99,
+   4                                                  0x92, 0x83, 0xf8, 0x80, 0x98 };
+   5          char disp[8]={ 2,0,1,1,0,1,2,5 };       //      宣告顯示資料
+   6          char i,j;                               //      宣告變數i,j
+   7          void delay1ms(int);
+   8          //=========================================
+   9          main()                          
+  10          {       while(1)                        //      while迴圈開始
+  11   1              {       for(i=0;i<8;i++)//      for敘述開始
+  12   2                      {       j=disp[7-i];//  取出顯示數字
+  13   3                              P2=TAB[j];      //      轉換成驅動信號，並輸出到P2
+  14   3                              P1=i;           //      輸出掃瞄信號
+  15   3                              delay1ms(2);//  延遲2ms
+  16   3                      }                               //      結束for敘述
+  17   2              }                                       //      結束while敘述
+  18   1      }                                               //      主程式結束
+  19          //=========================================
+  20          void delay1ms(int x)
+  21          {       int     i,j;
+  22   1              for(i=0;i<x;i++)
+  23   1                      for(j=0;j<120;j++);
+  24   1      }
+  25          //=========================================
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     94    ----
+   CONSTANT SIZE    =     10    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     10    ----
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

@@ -1,0 +1,127 @@
+BL51 BANKED LINKER/LOCATER V6.22                                                        01/19/2011  16:42:13  PAGE 1
+
+
+BL51 BANKED LINKER/LOCATER V6.22, INVOKED BY:
+C:\KEIL\C51\BIN\BL51.EXE KDM-2.obj TO KDM-2
+
+
+MEMORY MODEL: SMALL
+
+
+INPUT MODULES INCLUDED:
+  KDM-2.obj (KDM_2)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_STARTUP)
+  C:\KEIL\C51\LIB\C51S.LIB (?C_INIT)
+
+
+LINK MAP OF MODULE:  KDM-2 (KDM_2)
+
+
+            TYPE    BASE      LENGTH    RELOCATION   SEGMENT NAME
+            -----------------------------------------------------
+
+            * * * * * * *   D A T A   M E M O R Y   * * * * * * *
+            REG     0000H     0008H     ABSOLUTE     "REG BANK 0"
+            DATA    0008H     0017H     UNIT         ?DT?KDM_2
+            DATA    001FH     0005H     UNIT         _DATA_GROUP_
+            IDATA   0024H     0001H     UNIT         ?STACK
+
+            * * * * * * *   C O D E   M E M O R Y   * * * * * * *
+            CODE    0000H     0003H     ABSOLUTE     
+            CODE    0003H     008CH     UNIT         ?C_C51STARTUP
+            CODE    008FH     0059H     UNIT         ?PR?_SCANNER?KDM_2
+            CODE    00E8H     0026H     UNIT         ?PR?_DELAY1MS?KDM_2
+            CODE    010EH     001AH     UNIT         ?C_INITSEG
+            CODE    0128H     0015H     UNIT         ?PR?MAIN?KDM_2
+            CODE    013DH     000BH     UNIT         ?CO?KDM_2
+
+
+
+OVERLAY MAP OF MODULE:   KDM-2 (KDM_2)
+
+
+SEGMENT                          DATA_GROUP 
+  +--> CALLED SEGMENT          START    LENGTH
+----------------------------------------------
+?C_C51STARTUP                  -----    -----
+  +--> ?PR?MAIN?KDM_2
+  +--> ?C_INITSEG
+
+?PR?MAIN?KDM_2                 001FH    0001H
+  +--> ?PR?_SCANNER?KDM_2
+
+?PR?_SCANNER?KDM_2             0020H    0004H
+  +--> ?CO?KDM_2
+  +--> ?PR?_DELAY1MS?KDM_2
+
+
+
+SYMBOL TABLE OF MODULE:  KDM-2 (KDM_2)
+
+  VALUE           TYPE          NAME
+BL51 BANKED LINKER/LOCATER V6.22                                                      01/19/2011  16:42:13  PAGE 2
+
+
+  ----------------------------------
+
+  -------         MODULE        KDM_2
+  C:0000H         SYMBOL        _ICE_DUMMY_
+  D:0090H         PUBLIC        P1
+  D:00A0H         PUBLIC        P2
+  C:00E8H         PUBLIC        _delay1ms
+  C:0128H         PUBLIC        main
+  D:0008H         PUBLIC        disp
+  C:013DH         PUBLIC        TAB
+  C:008FH         PUBLIC        _scanner
+  -------         PROC          MAIN
+  -------         DO            
+  D:001FH         SYMBOL        i
+  -------         ENDDO         
+  C:0128H         LINE#         16
+  C:0128H         LINE#         17
+  C:0128H         LINE#         18
+  C:0128H         LINE#         19
+  C:012BH         LINE#         20
+  -------         ENDPROC       MAIN
+  -------         PROC          _DELAY1MS
+  D:0006H         SYMBOL        x
+  -------         DO            
+  D:0004H         SYMBOL        i
+  D:0002H         SYMBOL        j
+  -------         ENDDO         
+  C:00E8H         LINE#         24
+  C:00E8H         LINE#         25
+  C:00E8H         LINE#         26
+  C:00F8H         LINE#         27
+  C:010DH         LINE#         28
+  -------         ENDPROC       _DELAY1MS
+  -------         PROC          _SCANNER
+  D:0020H         SYMBOL        x
+  -------         DO            
+  D:0021H         SYMBOL        i
+  D:0001H         SYMBOL        j
+  D:0022H         SYMBOL        BCD
+  D:0023H         SYMBOL        scan
+  -------         ENDDO         
+  C:008FH         LINE#         30
+  C:0091H         LINE#         31
+  C:0091H         LINE#         32
+  C:0094H         LINE#         33
+  C:0097H         LINE#         34
+  C:0099H         LINE#         35
+  C:009CH         LINE#         36
+  C:00A1H         LINE#         37
+  C:00B8H         LINE#         38
+  C:00CBH         LINE#         39
+  C:00D2H         LINE#         40
+  C:00D8H         LINE#         41
+  C:00DCH         LINE#         42
+  C:00E7H         LINE#         43
+  -------         ENDPROC       _SCANNER
+  -------         ENDMOD        KDM_2
+BL51 BANKED LINKER/LOCATER V6.22                                                      01/19/2011  16:42:13  PAGE 3
+
+
+
+Program Size: data=37.0 xdata=0 code=328
+LINK/LOCATE RUN COMPLETE.  0 WARNING(S),  0 ERROR(S)

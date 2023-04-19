@@ -1,0 +1,66 @@
+C51 COMPILER V9.01   KDM_2                                                                 01/19/2011 16:42:13 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE KDM_2
+OBJECT MODULE PLACED IN KDM-2.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE KDM-2.C BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          /* ch05-4-3.c - 4個七節顯示器跑馬燈實驗,P1為掃瞄信號 P2接七節顯示器 */
+   2          //==宣告區==================================
+   3          #include  <reg51.h>     // 定義8051暫存器之標頭檔,P2-17~19 
+   4          #define SCANP   P1              // 定義掃瞄碼由Port 1輸出 
+   5          #define SEG7P   P2              // 定義七節顯示碼由Port 2輸出 
+   6          char code TAB[11]={     0xc0, 0xf9, 0xa4, 0xb0, 0x99,                   // 數字0-4
+   7                                                  0x92, 0x83, 0xf8, 0x80, 0x98, 0xff };   // 數字5-9,空白
+   8          #define  counts  8      // 宣告字組數量 
+   9          #define  digits  8      // 宣告七節顯示器位數   
+  10          char disp[2*digits+counts-1]={  10,10,10,10,10,10,10,10,
+  11                                                                          2,9,9,9,2,9,9,3,
+  12                                                                          10,10,10,10,10,10,10};//--------29992993-------
+  13          void delay1ms(int);     // 宣告延遲函數 
+  14          void scanner(char);     // 掃瞄函數
+  15          //==主程式===================================
+  16          main()                          // 主程式開始 
+  17          {       char i;                 // 宣告變數i
+  18   1              while(1)                // 無窮迴圈,程式一直跑 
+  19   1                      for(i=0;i<digits+counts;i++)    // 顯示count列字組,for迴圈(字組i)開始
+  20   1                              scanner(i);     // 掃瞄第i列字組
+  21   1      }                                       // 主程式結束
+  22          //==副程式====================================
+  23          /* 延遲函數,延遲約x*1ms */
+  24          void delay1ms(int x)    // 延遲函數開始 
+  25          {       int i,j;                        // 宣告整數變數i,j 
+  26   1              for (i=0;i<x;i++)       // 計數x次,延遲x*1ms 
+  27   1                      for (j=0;j<120;j++);    // 計數120次，延遲1ms 
+  28   1      }                                       // 延遲函數結束 
+  29          /* 掃瞄字組函數,顯示第x組數字 */
+  30          void scanner(char x)    // 掃瞄字組函數開始
+  31          {       char i,j,BCD,scan;      // 宣告變數
+  32   1              for (i=0;i<30;i++)      // 掃瞄30次i迴圈
+  33   1              {       scan=1;         // 掃瞄信號初值0000 0001
+  34   2                      for (j=0;j<digits;j++)  // 掃瞄4個數字j迴圈
+  35   2                      {       SEG7P=0xff;     // 關閉七段顯示器(防止閃動)
+  36   3                              SCANP=~scan;    // 輸出掃瞄信號(低4位元)
+  37   3                              BCD=disp[x+digits-1-j]; // 讀取第x組第j個數字之BCD碼
+  38   3                              SEG7P=TAB[BCD]; // 輸出至七節顯示器
+  39   3                              delay1ms(16/digits);    // 延遲
+  40   3                              scan<<=1;       // 產生下個掃瞄信號
+  41   3                      }                       // 結束掃瞄4個數字j迴圈
+  42   2              }                               // 結束掃瞄30次i迴圈
+  43   1      }                                       //      scanner函數結束
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    148    ----
+   CONSTANT SIZE    =     11    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     23       5
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

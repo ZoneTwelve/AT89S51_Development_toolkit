@@ -1,0 +1,75 @@
+C51 COMPILER V9.01   KDM_3                                                                 01/19/2011 16:58:32 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE KDM_3
+OBJECT MODULE PLACED IN KDM-3.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE KDM-3.C DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          /* ch05-4-4.c - 4x4鍵盤與4個7節顯示器實驗, P1.4~7為共用掃描信號 */
+   2          /* P1.0~3為鍵盤輸入值,P2為7節顯示器直接輸出 */
+   3          //==宣告區================================================
+   4          #include        <reg51.h>       // 定義8051暫存器之標頭檔
+   5          #define KEYP     P1             // 掃瞄輸出埠(高位元)及鍵盤輸入埠(低位元)
+   6          #define SEG7P    P2             // 7節顯示器(g~a)輸出埤
+   7          unsigned char code TAB[17]=                     // 共陽7節顯示器(g~a)編碼
+   8          {       0xc0, 0xf9, 0xa4, 0xb0, 0x99,   // 數字0-4
+   9                  0x92, 0x82, 0xf8, 0x80, 0x98,   // 數字5-9
+  10                  0xa0, 0x83, 0xa7, 0xa1, 0x84,   // 字母a-e(10-14)
+  11                  0x8e, 0xbf};                                    // 字母F(15),負號(-)
+  12          unsigned char disp[4]={ 0xbf, 0xbf, 0xbf, 0xbf }; // 顯示陣列初值為負號(-)
+  13          unsigned char scan[4]={ 0xef, 0xdf ,0xbf ,0x7f }; // 7顯示器及鍵盤之掃瞄碼
+  14          void  delay1ms(int);                            // 宣告延遲函數
+  15          void  scanner(void);                            // 宣告掃瞄函數
+  16          //==主程式================================================
+  17          main()                                                          // 主程式開始 
+  18          {       while(1)                                                // 無窮迴圈,程式一直跑 
+  19   1              scanner();                                              // 掃瞄鍵盤及顯示7段顯示器
+  20   1      }                                                                       // 主程式結束 
+  21          // === 延遲函數,延遲約x*1ms ================================
+  22          void delay1ms(int x)                            // 防彈跳函數開始 
+  23          {       int i,j;                                                // 宣告整數變數i 
+  24   1              for(i=0;i<x;i++)                                // 計數x次,延遲約*1ms           
+  25   1                      for(j=0;j<120;j++);                     // 計數120次,延遲約1ms 
+  26   1      }                                                                       // 防彈跳函數結束 
+  27          // ======= 掃瞄4*4鍵盤及4個7節顯示器函數 ================
+  28          void scanner(void)                                      // 掃瞄函數開始 
+  29          {       unsigned char col,row,dig;      // 宣告變數(col:行,row:列,dig:顥示位)
+  30   1              unsigned char rowkey,kcode;             // 宣告變數(rowkey:列鍵值,kcode:按鍵碼)
+  31   1              for(col=0;col<4;col++)                  // for迴圈,掃瞄第col行
+  32   1              {       KEYP  = scan[col];                      // 高4位輸出掃瞄信號,低4位元輸入列值
+  33   2                      SEG7P = disp[col];                      // 輸出第col行數字
+  34   2                      rowkey= ~KEYP & 0x0f;
+  35   2                      // 讀入KEYP低4位，反相再清除高4位求出列鍵值     
+  36   2                      if(rowkey != 0)                         // 若有按鍵
+  37   2                      {       if(rowkey == 0x01)      row=0;  // 若第0列被按下
+  38   3                              else if(rowkey == 0x02) row=1;  // 若第1列被按下
+  39   3                              else if(rowkey == 0x04) row=2;  // 若第2列被按下
+  40   3                              else if(rowkey == 0x08) row=3;  // 若第3列被按下
+  41   3                              kcode = 4 * col + row;                  // 算出按鍵之號碼
+  42   3                              for(dig = 0; dig < 3 ; dig++)           // 顯示陣列之左3字
+  43   3                                      disp[dig]=disp[dig+1];          // 將右側編碼左移1位
+  44   3                              disp[3]=TAB[kcode];                             // 鍵值編碼後，寫入最右側
+  45   3                              while(rowkey != 0)                              // 當按鈕未放開 
+  46   3                                      rowkey=~KEYP & 0x0f;            // 再讀入列鍵值
+  47   3                      }                                               //      if敘述(有按鍵時)結束    
+  48   2                      delay1ms(4);                    //      延遲4ms
+  49   2              }                                                       //      for迴圈結束(掃瞄col行)
+  50   1      }                                                               //      掃瞄函數scanner()結束   
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =    155    ----
+   CONSTANT SIZE    =     17    ----
+C51 COMPILER V9.01   KDM_3                                                                 01/19/2011 16:58:32 PAGE 2   
+
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      8       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

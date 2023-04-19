@@ -1,0 +1,251 @@
+C51 COMPILER V9.01   KDM_5                                                                 01/21/2011 23:23:51 PAGE 1   
+
+
+C51 COMPILER V9.01, COMPILATION OF MODULE KDM_5
+OBJECT MODULE PLACED IN KDM-5.OBJ
+COMPILER INVOKED BY: C:\Keil_V9\C51\BIN\C51.EXE KDM-5.C BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include        <reg51.h>       
+   2          #define SEGP    P0              // SEG
+   3          #define scanP   P1              // SEG
+   4          #define KEYP    P2              // KeyPad
+   5          #define Motor   P3
+   6          #define digits  8               // SEG 位數 
+   7          #define counts  1000    // scan_SEG = counts us, scan_KEY= 3*counts us
+   8          #define speed   250     // stepper moter = speed ms/step
+   9          #define excite1 1               // 激磁模式 
+  10          #define excite2 8               // 激磁模式 
+  11          #define MAX_steps       1000// 最多步數 
+  12          sbit    buzzer=P3^7;
+  13          unsigned char   T0H,T0L,T1H,T1L;
+  14          char    scan_S=1,KEYs=0,i=0;
+  15          bit             stop_F=0;
+  16          char code TAB[17]=              // 共陽7節顯示器(g~a)編碼 
+  17          {       0xc0, 0xf9, 0xa4, 0xb0, 0x99,
+  18                  0x92, 0x82, 0xf8, 0x80, 0x98,
+  19                  0xa0, 0x83, 0xa7, 0xa1, 0x84,
+  20                  0x8e, 0xff};                            
+  21          char disp[digits];              // SEG buffer
+  22          char scan[4]={ 0xef, 0xdf ,0xbf ,0x7f }; 
+  23          void    beep(char);
+  24          void    delay500us(int);
+  25          void    delay1ms(int);                          
+  26          void    forward(void);
+  27          void    reverse(void);
+  28          unsigned int  steps(void);// 換算步數 
+  29          //==主程式================================================
+  30          main()                                                          // 主程式開始 
+  31          {       char i;
+  32   1              EA=ET0=ET1=1;
+  33   1              PT0=1;
+  34   1              TMOD=0x11;
+  35   1              // Timer 0 每 1ms 掃瞄七節顯示器一次   
+  36   1              TH0=T0H=(65536-counts)/256;
+  37   1              TL0=T0L=(65536-counts)%256;
+  38   1              TR0=1;
+  39   1              // Timer 0 每 20ms 掃瞄KeyPad一次   
+  40   1              TH1=T1H=(65536-20*counts)/256;
+  41   1              TL1=T1L=(65536-20*counts)%256;
+  42   1              TR1=1;
+  43   1              // 顯示緩衝區填入空白 
+  44   1              for(i=0;i<digits;i++)  disp[i]=16;
+  45   1              disp[0]=0;
+  46   1              beep(2);
+  47   1              while(1)
+  48   1              {       if (KEYs==1)            // 正轉 
+  49   2                      {       beep(2);
+  50   3                              stop_F=0;
+  51   3                              KEYs=0;
+  52   3                              forward();
+  53   3                      }
+  54   2                      else if (KEYs==2)       // 反轉 
+  55   2                      {       beep(3);
+C51 COMPILER V9.01   KDM_5                                                                 01/21/2011 23:23:51 PAGE 2   
+
+  56   3                              stop_F=0;
+  57   3                              KEYs=0;
+  58   3                              reverse();
+  59   3                      }
+  60   2              }
+  61   1      }                                                               
+  62          // === 延遲函數,延遲約x*1ms ================================
+  63          void delay1ms(int x)                    
+  64          {       int i,j;                                        
+  65   1              for(i=0;i<x;i++)                        
+  66   1                      for(j=0;j<120;j++);             
+  67   1      }                                                               
+  68          // ======= 掃瞄4*4鍵盤及4個7節顯示器函數 ================
+  69          void scan_KEY(void)     interrupt 3             // Timer 1
+  70          {       unsigned char col,row,dig;      // 宣告變數(col:行,row:列,dig:顥示位)
+  71   1              unsigned char rowkey,kcode;             // 宣告變數(rowkey:列鍵值,kcode:按鍵碼)
+  72   1              TH1=T1H;TL1=T1L;
+  73   1              for(col=0;col<4;col++)                  // for迴圈,掃瞄第col行 
+  74   1              {       KEYP  = scan[col];                      // 高4位輸出掃瞄信號,低4位元輸入列值 
+  75   2                      rowkey= ~KEYP & 0x0f;
+  76   2                      // 讀入KEYP低4位，反相再清除高4位求出列鍵值     
+  77   2                      if(rowkey != 0)                         // 若有按鍵 
+  78   2                      {       if(rowkey == 0x01)      row=0;  // 若第0列被按下 
+  79   3                              else if(rowkey == 0x02) row=1;  // 若第1列被按下 
+  80   3                              else if(rowkey == 0x04) row=2;  // 若第2列被按下 
+  81   3                              else if(rowkey == 0x08) row=3;  // 若第3列被按下 
+  82   3                              kcode = 4 * col + row;                  // 算出按鍵之號碼 
+  83   3                              if (kcode==12)                                  //clear ==> Key C
+  84   3                                      for(dig = 0; dig < digits; dig++) disp[dig]=16;
+  85   3                              else if (kcode==13)                     // delete one bit ==> Key D
+  86   3                              {       for(dig = 0;dig < digits-2; dig++)
+  87   4                                              disp[dig]=disp[dig+1];          
+  88   4                                      disp[digits-1]=16;              
+  89   4                              }
+  90   3                              else if (kcode==14) KEYs=1;             // forward      ==> Key E
+  91   3                              else if (kcode==15)     KEYs=2;         // reverse      ==> Key F
+  92   3                              else if (kcode==10)     stop_F=1;       // Nop          ==> Key A
+  93   3                              else if (kcode==11)     stop_F=1;       // Nop          ==> Key B
+  94   3                              else
+  95   3                              {       for(dig = digits-1; dig > 0; dig--)     
+  96   4                                              disp[dig]=disp[dig-1];          
+  97   4                                      disp[0]=kcode;                          
+  98   4                              }
+  99   3                              for(dig = digits-2; dig > 0; dig--)
+ 100   3                              {       if ((disp[dig]==0)&disp[dig+1]==16) disp[dig]=16;
+ 101   4                              }
+ 102   3                              while(rowkey != 0)                      
+ 103   3                                      rowkey=~KEYP & 0x0f;    
+ 104   3                      }                               
+ 105   2              }                                       
+ 106   1      }                                               
+ 107          //=================================
+ 108          void  scan_SEG(void)  interrupt 1  //Timer 0
+ 109          {       TH0=T0H;TL0=T0L;
+ 110   1              scanP=0xff;
+ 111   1              SEGP=TAB[disp[i]];
+ 112   1              scanP=~scan_S;
+ 113   1              scan_S<<=1;
+ 114   1              if (++i==digits) 
+ 115   1              {       scan_S=1; i=0; }
+ 116   1      }
+ 117          //========================================
+C51 COMPILER V9.01   KDM_5                                                                 01/21/2011 23:23:51 PAGE 3   
+
+ 118          void  forward(void)
+ 119          {       unsigned int x,i;
+ 120   1              unsigned char signal=excite1; // 激磁模式  
+ 121   1              x=steps();
+ 122   1              if (x>MAX_steps) x=MAX_steps;
+ 123   1              for(i=0;i<x;i++)
+ 124   1              {       Motor=signal;
+ 125   2                      signal=signal<<1;
+ 126   2                      if (signal==0x10) signal=1;
+ 127   2                      if (disp[0]>0) disp[0]--;
+ 128   2                      else {  disp[0]=9; 
+ 129   3                                      if (disp[1]>0) 
+ 130   3                                      {       disp[1]--;
+ 131   4                                              if ((disp[1]==0)&disp[2]==16) disp[1]=16;
+ 132   4                                      }
+ 133   3                                      else {  disp[1]=9;
+ 134   4                                                      if (disp[2]>0) 
+ 135   4                                                      {       disp[2]--;
+ 136   5                                                              if ((disp[2]==0)&disp[3]==16) disp[2]=16;
+ 137   5                                                      }
+ 138   4                                                      else {  disp[2]=9;
+ 139   5                                                                      if (disp[3]>0) 
+ 140   5                                                                      {       disp[3]--;
+ 141   6                                                                              if ((disp[3]==0)&disp[4]==16) disp[3]=16;
+ 142   6                                                                      }
+ 143   5                                                                      else {  disp[3]=9;
+ 144   6                                                                                      if (disp[4]>0) disp[4]--;
+ 145   6                                                                                      if ((disp[4]==0)&disp[5]==16) disp[4]=16;
+ 146   6                                                                               }
+ 147   5                                                               }
+ 148   4                                                }
+ 149   3                                }
+ 150   2                      delay1ms(speed);
+ 151   2                      if      (stop_F) break;
+ 152   2              }
+ 153   1              beep(3);
+ 154   1      }
+ 155          //======================
+ 156          void  reverse(void)
+ 157          {       unsigned int x,i;
+ 158   1              unsigned char signal=excite2; // 激磁模式  
+ 159   1              x=steps();
+ 160   1              if (x>MAX_steps) x=MAX_steps;
+ 161   1              for(i=0;i<x;i++)
+ 162   1              {       Motor=signal;
+ 163   2                      signal=signal>>1;
+ 164   2                      if (signal==0) signal=8;
+ 165   2                      if (disp[0]>0) disp[0]--;
+ 166   2                      else {  disp[0]=9; 
+ 167   3                                      if (disp[1]>0) 
+ 168   3                                      {       disp[1]--;
+ 169   4                                              if ((disp[1]==0)&disp[2]==16) disp[1]=16;
+ 170   4                                      }
+ 171   3                                      else {  disp[1]=9;
+ 172   4                                                      if (disp[2]>0) 
+ 173   4                                                      {       disp[2]--;
+ 174   5                                                              if ((disp[2]==0)&disp[3]==16) disp[2]=16;
+ 175   5                                                      }
+ 176   4                                                      else {  disp[2]=9;
+ 177   5                                                                      if (disp[3]>0) 
+ 178   5                                                                      {       disp[3]--;
+ 179   6                                                                              if ((disp[3]==0)&disp[4]==16) disp[3]=16;
+C51 COMPILER V9.01   KDM_5                                                                 01/21/2011 23:23:51 PAGE 4   
+
+ 180   6                                                                      }
+ 181   5                                                                      else {  disp[3]=9;
+ 182   6                                                                                      if (disp[4]>0) disp[4]--;
+ 183   6                                                                                      if ((disp[4]==0)&disp[5]==16) disp[4]=16;
+ 184   6                                                                               }
+ 185   5                                                               }
+ 186   4                                                }
+ 187   3                                }
+ 188   2                      delay1ms(speed);
+ 189   2                      if      (stop_F) break;
+ 190   2              }
+ 191   1              beep(3);
+ 192   1      }
+ 193          //======================
+ 194          unsigned int  steps(void)
+ 195          {       char  i;
+ 196   1              char  TMP[5];
+ 197   1              unsigned int x=0;
+ 198   1              beep(1);
+ 199   1              for(i=0;i<5;i++)
+ 200   1              {       if (disp[i]==16)  TMP[i]=0; 
+ 201   2                      else TMP[i]=disp[i];
+ 202   2              }
+ 203   1              x=TMP[0]+10*TMP[1]+100*TMP[2]+1000*TMP[3]+10000*TMP[4];
+ 204   1              return x;
+ 205   1      }
+ 206          //======================
+ 207          void    beep(char x)
+ 208          {       char i,j;                                       
+ 209   1              for(i=0;i<x;i++)                        
+ 210   1              {       for(j=0;j<100;j++)
+ 211   2                      {       buzzer=1;delay500us(1);         
+ 212   3                              buzzer=0;delay500us(1);
+ 213   3                      }
+ 214   2                      delay500us(120);                
+ 215   2              }                                                               
+ 216   1      }
+ 217          //======================
+ 218          void    delay500us(int x)
+ 219          {       int i,j;                                        
+ 220   1              for(i=0;i<x;i++)                        
+ 221   1                      for(j=0;j<60;j++);              
+ 222   1      }                                                               
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1245    ----
+   CONSTANT SIZE    =     17    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =     19      16
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =      1    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)

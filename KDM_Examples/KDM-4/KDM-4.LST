@@ -1,0 +1,54 @@
+C51 COMPILER V8.01   KDM_4                                                                 01/08/2011 17:36:22 PAGE 1   
+
+
+C51 COMPILER V8.01, COMPILATION OF MODULE KDM_4
+OBJECT MODULE PLACED IN KDM-4.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE KDM-4.C BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          /* ch10-3-1.c - 1相驅動實驗 */
+   2          //利用delay5mDELAY副程式(5ms times), 產生驅動信號
+   3          //由P1輸出      速度為 1/(5ms timers) 步/秒
+   4          #include  <reg51.h>             // 包含reg51.h檔 
+   5          #define  OUTPUT         P1      // 定義輸出埠為P1
+   6          unsigned int times=50;          // 宣告延遲時間變數( 5ms) 
+   7          unsigned char excite;           // 宣告激磁變數 
+   8          void step_rst(void);            // 宣告定位函數 
+   9          void delay5ms(int);             // 宣告延遲函數 
+  10          //=====主程式======================================
+  11          main()                          // 主程式開始 
+  12          {       OUTPUT=0;       // 關閉輸出 
+  13   1              step_rst();     // 定位 
+  14   1              while (1)       //      while迴圈 
+  15   1                      step_rst();                     // 運轉
+  16   1      }                                       // 結束主程式 
+  17          //======定位函數========================================
+  18          void step_rst(void)             // 定位函數開始
+  19          {       char i;                         // 宣告變數
+  20   1              excite=1;                               // 激磁初值
+  21   1              for(i=0;i<4;i++)                        // 輸出四個信號
+  22   1              {       OUTPUT=excite;          // 輸出激磁信號
+  23   2                      delay5ms(times);                // 延遲0.25秒
+  24   2                      excite<<=1;                     // 左移，下一個激磁
+  25   2              }                               // 結束 
+  26   1      }
+  27          //=======延遲函數=====================================
+  28          void delay5ms(int x)            // 延遲函數開始
+  29          { int i,j;                              // 宣告變數 
+  30   1              for(i=0;i<x;i++)                        // i迴圈 
+  31   1                      for(j=0;j<600;j++); }   // j迴圈
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =     83    ----
+   CONSTANT SIZE    =   ----    ----
+   XDATA SIZE       =   ----    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      3       1
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----    ----
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
